@@ -1,0 +1,46 @@
+{% if files %}
+    <div class="file-list-grid">
+        {% for file in files %}
+            <div class="file-item">
+                <div class="file-icon">
+                    {% if file.endswith('.zip') or file.endswith('.rar') or file.endswith('.tar') %}
+                        <i class="ph-duotone ph-file-zip"></i>
+                    {% elif file.endswith('.txt') or file.endswith('.md') %}
+                        <i class="ph-duotone ph-file-text"></i>
+                    {% elif file.endswith('.pdf') %}
+                        <i class="ph-duotone ph-file-pdf"></i>
+                    {% elif file.endswith('.jpg') or file.endswith('.jpeg') or file.endswith('.png') or file.endswith('.webp') %}
+                        <i class="ph-duotone ph-file-image"></i>
+                    {% elif file.endswith('.mp4') or file.endswith('.mkv') or file.endswith('.mov') %}
+                        <i class="ph-duotone ph-file-video"></i>
+                    {% elif file.endswith('.py') or file.endswith('.js') or file.endswith('.html') or file.endswith('.css') %}
+                        <i class="ph-duotone ph-file-code"></i>
+                    {% else %}
+                        <i class="ph-duotone ph-file"></i>
+                    {% endif %}
+                </div>
+                
+                <div class="file-info">
+                    <p class="file-name">{{ file }}</p>
+                    <p class="file-meta">
+                        Securely Encrypted
+                    </p>
+                </div>
+
+                <div class="file-actions">
+                    <a href="/download/{{ file }}" class="btn-icon download" title="Download">
+                        <i class="ph ph-download-simple"></i>
+                    </a>
+                    <button onclick="deleteFile('{{ file }}')" class="btn-icon delete" title="Delete">
+                        <i class="ph ph-trash-simple"></i>
+                    </button>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div style="text-align: center; color: var(--text-muted); padding: 3rem;">
+        <i class="ph ph-folder-open" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+        <p>Your vault is empty</p>
+    </div>
+{% endif %}
