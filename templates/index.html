@@ -102,7 +102,7 @@
                 </button>
             </div>
 
-            <div id="fileList" hx-get="/files" hx-trigger="load, every 10s" style="min-height: 100px;">
+            <div id="fileList" hx-get="/files" hx-trigger="load" style="min-height: 100px;">
                 <div style="text-align: center; color: var(--text-muted); padding: 3rem;">
                     <i class="ph ph-circle-notch ph-spin"
                         style="font-size: 2.5rem; margin-bottom: 1rem; color: var(--primary);"></i>
@@ -183,8 +183,7 @@
                     statusMessage.style.color = 'var(--secondary)';
 
                     // Refresh file list and stats
-                    htmx.trigger('#fileList', 'load');
-                    updateStats();
+                    refreshDashboard();
 
                     // Hide progress after a while
                     setTimeout(() => {
@@ -205,6 +204,8 @@
             xhr.send(formData);
         }
 
+        const DASHBOARD_REFRESH_MS = 60000;
+
         // Update stats
         function updateStats() {
             fetch('/stats')
@@ -216,9 +217,24 @@
                 .catch(err => console.error('Stats error:', err));
         }
 
-        // Initial load and periodic refresh
-        updateStats();
-        setInterval(updateStats, 10000);
+        function refreshDashboard() {
+            htmx.ajax('GET', '/files', '#fileList');
+            updateStats();
+        }
+
+        // Initial load and low-frequency refresh to reduce background load.
+        refreshDashboard();
+        setInterval(() => {
+            if (document.visibilityState === 'visible') {
+                refreshDashboard();
+            }
+        }, DASHBOARD_REFRESH_MS);
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                refreshDashboard();
+            }
+        });
 
         // Refresh handle
         document.body.addEventListener('htmx:afterOnLoad', function (evt) {
@@ -233,8 +249,7 @@
                 fetch(`/delete/${filename}`, { method: 'POST' })
                     .then(res => res.json())
                     .then(data => {
-                        htmx.trigger('#fileList', 'load');
-                        updateStats();
+                        refreshDashboard();
                     })
                     .catch(err => console.error('Delete error:', err));
             }
