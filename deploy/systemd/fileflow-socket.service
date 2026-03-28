@@ -1,0 +1,14 @@
+[Unit]
+Description=FileFlow Socket Server
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=__APP_DIR__
+Environment=PYTHONUNBUFFERED=1
+ExecStart=__APP_DIR__/.venv/bin/python __APP_DIR__/server.py
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

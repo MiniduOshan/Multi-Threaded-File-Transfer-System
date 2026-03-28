@@ -1,19 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FileFlow | Secure Multi-Threaded File Transfer</title>
-    
+
     <!-- Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
-    
+
     <!-- Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    
+
     <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@1.9.6"></script>
-    
+
     <!-- Styles -->
     <link rel="stylesheet" href="/static/css/style.css">
     <style>
@@ -23,6 +24,7 @@
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
+
         @media (max-width: 768px) {
             .stats-grid {
                 grid-template-columns: 1fr;
@@ -30,206 +32,215 @@
         }
     </style>
 </head>
+
 <body>
 
-<div class="container animate-fade-in">
-    <header>
-        <h1><i class="ph-duotone ph-cloud-arrow-up"></i> FileFlow</h1>
-        <p>Secure, Multi-threaded, and Encrypted file transfers</p>
-    </header>
+    <div class="container animate-fade-in">
+        <header>
+            <h1><i class="ph-duotone ph-cloud-arrow-up"></i> FileFlow</h1>
+            <p>Secure, Multi-threaded, and Encrypted file transfers</p>
+        </header>
 
-    <!-- System Stats -->
-    <div class="stats-grid">
-        <div class="glass-card" style="padding: 1.5rem; text-align: center; margin-bottom: 0;">
-            <p style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">Storage Used</p>
-            <h3 id="statStorage" style="font-size: 1.5rem; font-weight: 700;">--</h3>
+        <!-- System Stats -->
+        <div class="stats-grid">
+            <div class="glass-card" style="padding: 1.5rem; text-align: center; margin-bottom: 0;">
+                <p
+                    style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">
+                    Storage Used</p>
+                <h3 id="statStorage" style="font-size: 1.5rem; font-weight: 700;">--</h3>
+            </div>
+            <div class="glass-card" style="padding: 1.5rem; text-align: center; margin-bottom: 0;">
+                <p
+                    style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">
+                    Total Files</p>
+                <h3 id="statFiles" style="font-size: 1.5rem; font-weight: 700;">--</h3>
+            </div>
+            <div class="glass-card" style="padding: 1.5rem; text-align: center; margin-bottom: 0;">
+                <p
+                    style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">
+                    Server Status</p>
+                <h3 style="color: var(--secondary); font-size: 1.5rem; font-weight: 700;">
+                    <i class="ph ph-circle-fill"
+                        style="font-size: 0.875rem; vertical-align: middle; margin-right: 0.25rem;"></i> Online
+                </h3>
+            </div>
         </div>
-        <div class="glass-card" style="padding: 1.5rem; text-align: center; margin-bottom: 0;">
-            <p style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">Total Files</p>
-            <h3 id="statFiles" style="font-size: 1.5rem; font-weight: 700;">--</h3>
-        </div>
-        <div class="glass-card" style="padding: 1.5rem; text-align: center; margin-bottom: 0;">
-            <p style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">Server Status</p>
-            <h3 style="color: var(--secondary); font-size: 1.5rem; font-weight: 700;">
-                <i class="ph ph-circle-fill" style="font-size: 0.875rem; vertical-align: middle; margin-right: 0.25rem;"></i> Online
-            </h3>
-        </div>
-    </div>
 
-    <!-- Upload Section -->
-    <div class="glass-card">
-        <form id="uploadForm" enctype="multipart/form-data">
-            <label for="fileInput" class="dropzone" id="dropzone">
-                <div class="dropzone-icon">
-                    <i class="ph-duotone ph-upload-simple"></i>
+        <!-- Upload Section -->
+        <div class="glass-card">
+            <form id="uploadForm" enctype="multipart/form-data">
+                <label for="fileInput" class="dropzone" id="dropzone">
+                    <div class="dropzone-icon">
+                        <i class="ph-duotone ph-upload-simple"></i>
+                    </div>
+                    <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Click to select or drag & drop</h3>
+                    <p style="color: var(--text-muted);">Transfer large files securely with built-in encryption</p>
+                    <input type="file" name="file" id="fileInput">
+                </label>
+            </form>
+
+            <div id="uploadProgress" class="upload-progress-container">
+                <div class="progress-info">
+                    <span id="progressFileName" style="font-weight: 500;">uploading...</span>
+                    <span id="progressPercent" style="color: var(--primary); font-weight: 700;">0%</span>
                 </div>
-                <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Click to select or drag & drop</h3>
-                <p style="color: var(--text-muted);">Transfer large files securely with built-in encryption</p>
-                <input type="file" name="file" id="fileInput">
-            </label>
-        </form>
-
-        <div id="uploadProgress" class="upload-progress-container">
-            <div class="progress-info">
-                <span id="progressFileName" style="font-weight: 500;">uploading...</span>
-                <span id="progressPercent" style="color: var(--primary); font-weight: 700;">0%</span>
+                <div class="progress-bar-bg">
+                    <div id="progressBarFill" class="progress-bar-fill"></div>
+                </div>
             </div>
-            <div class="progress-bar-bg">
-                <div id="progressBarFill" class="progress-bar-fill"></div>
-            </div>
-        </div>
-        <div id="statusMessage" style="margin-top: 1rem; font-size: 0.875rem; text-align: center; font-weight: 500;"></div>
-    </div>
-
-    <!-- File Management -->
-    <div class="glass-card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-            <h2 style="font-size: 1.25rem; font-weight: 600;"><i class="ph-duotone ph-files" style="margin-right: 0.5rem; color: var(--primary);"></i> Your Files</h2>
-            <button class="btn btn-primary" hx-get="/files" hx-target="#fileList">
-                <i class="ph ph-arrows-clockwise"></i> Refresh
-            </button>
+            <div id="statusMessage"
+                style="margin-top: 1rem; font-size: 0.875rem; text-align: center; font-weight: 500;"></div>
         </div>
 
-        <div id="fileList" 
-             hx-get="/files" 
-             hx-trigger="load, every 10s" 
-             style="min-height: 100px;">
-            <div style="text-align: center; color: var(--text-muted); padding: 3rem;">
-                <i class="ph ph-circle-notch ph-spin" style="font-size: 2.5rem; margin-bottom: 1rem; color: var(--primary);"></i>
-                <p>Establishing secure connection...</p>
+        <!-- File Management -->
+        <div class="glass-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.25rem; font-weight: 600;"><i class="ph-duotone ph-files"
+                        style="margin-right: 0.5rem; color: var(--primary);"></i> Your Files</h2>
+                <button class="btn btn-primary" hx-get="/files" hx-target="#fileList">
+                    <i class="ph ph-arrows-clockwise"></i> Refresh
+                </button>
+            </div>
+
+            <div id="fileList" hx-get="/files" hx-trigger="load, every 10s" style="min-height: 100px;">
+                <div style="text-align: center; color: var(--text-muted); padding: 3rem;">
+                    <i class="ph ph-circle-notch ph-spin"
+                        style="font-size: 2.5rem; margin-bottom: 1rem; color: var(--primary);"></i>
+                    <p>Establishing secure connection...</p>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<script>
-    const dropzone = document.getElementById('dropzone');
-    const fileInput = document.getElementById('fileInput');
-    const uploadForm = document.getElementById('uploadForm');
-    const progressBarFill = document.getElementById('progressBarFill');
-    const progressPercent = document.getElementById('progressPercent');
-    const progressFileName = document.getElementById('progressFileName');
-    const uploadProgress = document.getElementById('uploadProgress');
-    const statusMessage = document.getElementById('statusMessage');
+    <script>
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('fileInput');
+        const uploadForm = document.getElementById('uploadForm');
+        const progressBarFill = document.getElementById('progressBarFill');
+        const progressPercent = document.getElementById('progressPercent');
+        const progressFileName = document.getElementById('progressFileName');
+        const uploadProgress = document.getElementById('uploadProgress');
+        const statusMessage = document.getElementById('statusMessage');
 
-    // Drag and drop handlers
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        dropzone.addEventListener(eventName, preventDefaults, false);
-    });
+        // Drag and drop handlers
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, preventDefaults, false);
+        });
 
-    function preventDefaults(e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
-
-    ['dragenter', 'dragover'].forEach(eventName => {
-        dropzone.addEventListener(eventName, () => dropzone.classList.add('active'), false);
-    });
-
-    ['dragleave', 'drop'].forEach(eventName => {
-        dropzone.addEventListener(eventName, () => dropzone.classList.remove('active'), false);
-    });
-
-    dropzone.addEventListener('drop', handleDrop, false);
-
-    function handleDrop(e) {
-        let dt = e.dataTransfer;
-        let files = dt.files;
-        handleFiles(files);
-    }
-
-    fileInput.onchange = (e) => handleFiles(e.target.files);
-
-    function handleFiles(files) {
-        if (files.length === 0) return;
-        const file = files[0];
-        
-        // Show progress bar
-        uploadProgress.style.display = 'block';
-        progressFileName.textContent = file.name;
-        progressBarFill.style.width = '0%';
-        progressPercent.textContent = '0%';
-        statusMessage.textContent = '';
-        statusMessage.style.color = 'var(--text)';
-
-        let formData = new FormData();
-        formData.append('file', file);
-
-        let xhr = new XMLHttpRequest();
-        xhr.open('POST', '/upload', true);
-
-        xhr.upload.onprogress = function(e) {
-            if (e.lengthComputable) {
-                let percent = Math.round((e.loaded / e.total) * 100);
-                progressBarFill.style.width = percent + '%';
-                progressPercent.textContent = percent + '%';
-            }
-        };
-
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                const response = JSON.parse(xhr.responseText);
-                statusMessage.textContent = response.message;
-                statusMessage.style.color = 'var(--secondary)';
-                
-                // Refresh file list and stats
-                htmx.trigger('#fileList', 'load');
-                updateStats();
-                
-                // Hide progress after a while
-                setTimeout(() => {
-                    uploadProgress.style.display = 'none';
-                    statusMessage.textContent = '';
-                }, 4000);
-            } else {
-                statusMessage.textContent = 'Upload failed: ' + xhr.statusText;
-                statusMessage.style.color = 'var(--danger)';
-            }
-        };
-
-        xhr.onerror = function() {
-            statusMessage.textContent = 'Network error during upload';
-            statusMessage.style.color = 'var(--danger)';
-        };
-
-        xhr.send(formData);
-    }
-
-    // Update stats
-    function updateStats() {
-        fetch('/stats')
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById('statStorage').textContent = data.storageUsed;
-                document.getElementById('statFiles').textContent = data.numFiles;
-            })
-            .catch(err => console.error('Stats error:', err));
-    }
-
-    // Initial load and periodic refresh
-    updateStats();
-    setInterval(updateStats, 10000);
-
-    // Refresh handle
-    document.body.addEventListener('htmx:afterOnLoad', function(evt) {
-        if (evt.detail.target.id === 'fileList') {
-            // Re-initialize any icons if needed
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
         }
-    });
 
-    // Handle delete with confirmation
-    function deleteFile(filename) {
-        if (confirm(`Are you sure you want to delete ${filename}?`)) {
-            fetch(`/delete/${filename}`, { method: 'POST' })
-                .then(res => res.json())
-                .then(data => {
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropzone.addEventListener(eventName, () => dropzone.classList.add('active'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, () => dropzone.classList.remove('active'), false);
+        });
+
+        dropzone.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            let dt = e.dataTransfer;
+            let files = dt.files;
+            handleFiles(files);
+        }
+
+        fileInput.onchange = (e) => handleFiles(e.target.files);
+
+        function handleFiles(files) {
+            if (files.length === 0) return;
+            const file = files[0];
+
+            // Show progress bar
+            uploadProgress.style.display = 'block';
+            progressFileName.textContent = file.name;
+            progressBarFill.style.width = '0%';
+            progressPercent.textContent = '0%';
+            statusMessage.textContent = '';
+            statusMessage.style.color = 'var(--text)';
+
+            let formData = new FormData();
+            formData.append('file', file);
+
+            let xhr = new XMLHttpRequest();
+            xhr.open('POST', '/upload', true);
+
+            xhr.upload.onprogress = function (e) {
+                if (e.lengthComputable) {
+                    let percent = Math.round((e.loaded / e.total) * 100);
+                    progressBarFill.style.width = percent + '%';
+                    progressPercent.textContent = percent + '%';
+                }
+            };
+
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    const response = JSON.parse(xhr.responseText);
+                    statusMessage.textContent = response.message;
+                    statusMessage.style.color = 'var(--secondary)';
+
+                    // Refresh file list and stats
                     htmx.trigger('#fileList', 'load');
                     updateStats();
-                })
-                .catch(err => console.error('Delete error:', err));
+
+                    // Hide progress after a while
+                    setTimeout(() => {
+                        uploadProgress.style.display = 'none';
+                        statusMessage.textContent = '';
+                    }, 4000);
+                } else {
+                    statusMessage.textContent = 'Upload failed: ' + xhr.statusText;
+                    statusMessage.style.color = 'var(--danger)';
+                }
+            };
+
+            xhr.onerror = function () {
+                statusMessage.textContent = 'Network error during upload';
+                statusMessage.style.color = 'var(--danger)';
+            };
+
+            xhr.send(formData);
         }
-    }
-</script>
+
+        // Update stats
+        function updateStats() {
+            fetch('/stats')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('statStorage').textContent = data.storageUsed;
+                    document.getElementById('statFiles').textContent = data.numFiles;
+                })
+                .catch(err => console.error('Stats error:', err));
+        }
+
+        // Initial load and periodic refresh
+        updateStats();
+        setInterval(updateStats, 10000);
+
+        // Refresh handle
+        document.body.addEventListener('htmx:afterOnLoad', function (evt) {
+            if (evt.detail.target.id === 'fileList') {
+                // Re-initialize any icons if needed
+            }
+        });
+
+        // Handle delete with confirmation
+        function deleteFile(filename) {
+            if (confirm(`Are you sure you want to delete ${filename}?`)) {
+                fetch(`/delete/${filename}`, { method: 'POST' })
+                    .then(res => res.json())
+                    .then(data => {
+                        htmx.trigger('#fileList', 'load');
+                        updateStats();
+                    })
+                    .catch(err => console.error('Delete error:', err));
+            }
+        }
+    </script>
 
 </body>
+
 </html>

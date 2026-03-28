@@ -25,5 +25,6 @@ jobs:
           script_stop: true
           script: |
             set -e
-            cd /opt/fileflow
-            /opt/fileflow/deploy.sh
+            cd /opt/fileflow/Multi-Threaded-File-Transfer-System
+            chmod +x deploy/deploy.sh
+            ./deploy/deploy.sh

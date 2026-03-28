@@ -66,11 +66,12 @@ Multi-Threaded-File-Transfer-System/
 - Packages:
   - flask
   - cryptography
+    - gunicorn (production)
 
 Install dependencies:
 
 ```bash
-pip install flask cryptography
+pip install -r requirements.txt
 ```
 
 ## Running the App
@@ -97,6 +98,50 @@ Notes:
 1. Integrated mode (recommended): `python app.py`
 2. Socket-only backend: `python server.py`
 3. Helper launcher: `python run.py`
+
+## Production Deployment (DigitalOcean)
+
+The repository includes production-ready deployment files for:
+
+1. `gunicorn` web service (`fileflow-web.service`)
+2. socket server service (`fileflow-socket.service`)
+3. nginx reverse proxy (`deploy/nginx/fileflow.conf`)
+4. GitHub Actions deploy script (`deploy/deploy.sh`)
+
+### One-Time Server Setup
+
+Clone your repository under `/opt/fileflow` (or any path), then run:
+
+```bash
+cd /opt/fileflow/Multi-Threaded-File-Transfer-System
+chmod +x deploy/setup-production.sh deploy/deploy.sh
+./deploy/setup-production.sh
+```
+
+What this does:
+
+1. Installs OS dependencies (`nginx`, `python3-venv`, `ufw`)
+2. Installs nginx config for proxying to `127.0.0.1:5000`
+3. Creates/updates Python virtualenv and installs `requirements.txt`
+4. Installs and restarts `fileflow-socket` and `fileflow-web` systemd services
+
+### Continuous Deployment via GitHub Actions
+
+Workflow file: `.github/workflows/deploy-digitalocean.yml`
+
+Required GitHub repository secrets:
+
+1. `DO_HOST` - droplet public IP
+2. `DO_USER` - SSH user (e.g., `root`)
+3. `DO_SSH_KEY` - private SSH key (full key content)
+4. `DO_PORT` - SSH port (usually `22`)
+
+On every push to `main`, the workflow SSH-es into the droplet and runs:
+
+```bash
+cd /opt/fileflow/Multi-Threaded-File-Transfer-System
+./deploy/deploy.sh
+```
 
 ## API Endpoints
 

@@ -193,11 +193,15 @@ def delete_file(filename):
 
 
 if __name__ == "__main__":
-    debug_mode = True
+    debug_mode = os.environ.get("FLASK_DEBUG", "0") == "1"
+    host = os.environ.get("FLASK_HOST", "127.0.0.1")
+    port = int(os.environ.get("FLASK_PORT", "5000"))
+    start_embedded_socket = os.environ.get("START_EMBEDDED_SOCKET", "0") == "1"
 
-    # Flask debug reloader launches two processes; only launch socket server in the child.
-    should_start_socket = (not debug_mode) or (os.environ.get("WERKZEUG_RUN_MAIN") == "true")
-    if should_start_socket and not socket_server_is_running():
-        threading.Thread(target=run_socket_server, daemon=True).start()
+    # Keep embedded socket startup as an explicit opt-in for local/dev use.
+    if start_embedded_socket:
+        should_start_socket = (not debug_mode) or (os.environ.get("WERKZEUG_RUN_MAIN") == "true")
+        if should_start_socket and not socket_server_is_running():
+            threading.Thread(target=run_socket_server, daemon=True).start()
 
-    app.run(debug=debug_mode, threaded=True)
+    app.run(host=host, port=port, debug=debug_mode, threaded=True)
